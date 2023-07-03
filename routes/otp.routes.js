@@ -1,18 +1,18 @@
 const { Router } = require("express");
 const {
-  addOtp,
-  getOtp,
-  updateOtp,
-  deleteOtp,
-  getOtpById,
+  // addOtp,
+  // getOtp,
+  // updateOtp,
+  // deleteOtp,
+  // getOtpById,
+  newOtp, verifyOtp,
 } = require("../controllers/otp.controller");
 
 const router = Router();
 
-router.post("/add", addOtp);
-router.get("/", getOtp);
-router.put("/:id", updateOtp);
-router.delete("/:id", deleteOtp);
-router.get("/:id", getOtpById);
+router.post("/newotp", newOtp);
+router.post("/verify", verifyOtp);
+// router.delete("/delete/:id", deleteOtp);
+// router.get("/:id", getOtpById);
 
 module.exports = router;
