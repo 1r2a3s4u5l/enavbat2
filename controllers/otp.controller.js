@@ -105,9 +105,10 @@ const verifyOtp = async (req, res) => {
             "INSERT INTO token (table_name,user_id,user_os,user_device,user_browser,hashed_refresh_token) VALUES ($1,$2,$3,$4,$5,$6) returning id",
             ["client", client_id, os, device, client, hashedrefreshtoken]
           );
-
-          // setCookie
-
+          res.cookie("refreshToken", tokens.refreshToken, {
+            mxAge: config.get("refresh_ms"),
+            httpOnly: true,
+          });
           console.log(tokens);
           const response = {
             Status: "Success",
@@ -134,6 +135,7 @@ const verifyOtp = async (req, res) => {
     return res.status(400).send(response);
   }
 };
+
 const deleteOTP = async (req, res) => {
   const { verification_key, check } = req.body;
   console.log(req.body);
