@@ -102,33 +102,56 @@ const verifyOtp = async (req, res) => {
     return res.status(400).send(response);
   }
 };
-// const getOtpById = async (req, res) => {
-//   try {
-//     const id = req.params.id;
-//     const otp = await pool.query(
-//       `
-//             select * from otp where id = $1
-//             `,
-//       [id]
-//     );
-//     res.status(200).send(otp.rows);
-//   } catch (error) {
-//     res.status(500).json("Serverda xatolik");
-//   }
-// };
-// const deleteOtp = async (req, res) => {
-//   try {
-//     const id = req.params.id;
-//     const otps = await pool.query(`DELETE FROM otp WHERE id = $1`, [id]);
-//     res.status(200).json("Successfully deleted");
-//   } catch (error) {
-//     res.status(500).json("Serverda xatolik");
-//   }
-// };
+const deleteOTP = async (req, res) => {
+  const { verification_key, check } = req.body;
+  console.log(req.body);
+
+  let decoded;
+
+  try {
+    decoded = await decode(verification_key);
+  } catch (error) {
+    console.error("Error decoding verification_key:", error);
+    const response = { Status: "Failure", Details: "Bad Request" };
+    return res.status(400).send(response);
+  }
+  var obj = JSON.parse(decoded);
+  const check_obj = obj.check;
+
+  if (check_obj != check) {
+    const response = {
+      Status: "Failure",
+      Details: "OTP was not send to this particular phone number",
+    };
+    return res.status(400).send(response);
+  }
+  let params = { id: obj.otp_id };
+
+  const deletedOTP = await pool.query(
+    `DELETE FROM otp WHERE id=$1 RETURNING id`,
+    [params.id]
+  );
+  if (deletedOTP.rows.length == 0) {
+    return res.status(400).send("Invalid OTP");
+  }
+  return res.status(200).send(params);
+};
+
+const getOTPByID = async (req, res) => {
+  let params = { id: req.params.id };
+  const otpResult = await pool.query(`SELECT * FROM otp WHERE id=$1`, [
+    params.id,
+  ]);
+  const result = otpResult.rows[0];
+  if (otpResult.rows.length == 0) {
+    return res.status(400).send("Invalid OTP");
+  }
+  return res.status(200).send(result);
+};
 
 module.exports = {
   newOtp,
   verifyOtp,
-  // getOtpById,
-  // deleteOtp,
+  getOTPByID,
+  deleteOTP,
 };
